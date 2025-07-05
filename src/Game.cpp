@@ -9,6 +9,11 @@ Game::Game() {
     this->isConfig = true;
     this-> lower = cv::Scalar(0,0,0);
     this-> higher = cv::Scalar(0,0,0);
+    this->round = 0;
+    this->hp;
+
+
+    fruits.push_back(Fruit(10,"/home/arielhirsch/codingProjects/C++/ParticlesWIthOpenCV/images/watermelon.png",0,1));
 
     cv::namedWindow("Image");
     if (!cap.isOpened()) {
@@ -30,7 +35,30 @@ void Game::onMouseCallBack(int event,int x, int y,int,void* userdata) {
         self->higher = cv::Scalar(std::min(179,h+Constants::H_PAD),std::min(255,s+Constants::S_PAD),std::min(255,v+Constants::V_PAD));
     }
 }
+void Game::renderFruits() {
 
+    fruits.erase(
+        std::remove_if(fruits.begin(),fruits.end(),[&](const Fruit& fruit) {//we use remove_if to get a pointer to the end of the valid values and then erase deletes all the non-valid values
+                    return fruit.getY() > this->screen.rows && fruit.getYVelocity() > 0;
+        }),fruits.end()
+    );
+
+
+    for (Fruit& fruit : fruits) {
+        cv::Mat fruitOverlay = cv::imread(fruit.getImage());
+        cv::resize(fruitOverlay,fruitOverlay,cv::Size(100,100));
+        if (fruit.getX() < this->screen.cols && fruit.getY() < this->screen.rows) {//checks that the image is not out of bounds
+            int height = fruitOverlay.rows;
+            if (this->screen.rows - fruit.getY() < fruitOverlay.rows) {
+                height = this->screen.rows - fruit.getY();
+                fruitOverlay = fruitOverlay(cv::Rect(0,0,fruitOverlay.cols,height));
+            }
+            fruitOverlay.copyTo(this->screen(cv::Rect(fruit.getX(),fruit.getY(),fruitOverlay.cols,height)));
+        }
+        fruit.move();
+    }
+
+}
 
 void Game::loop() {
 
@@ -53,12 +81,18 @@ void Game::loop() {
         }
 
         //Game logic
+        renderFruits();//needs to be before the imshow so it will be on top of the image.
+
         cv::imshow("maskImage",this->maskImage);
         cv::imshow("Image",this->screen);
+
+
 
         if (cv::waitKey(1) == 'q') {
             break;
         }
     }
 }
+
+
 

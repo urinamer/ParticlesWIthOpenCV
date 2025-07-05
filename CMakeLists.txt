@@ -9,10 +9,11 @@ find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 add_executable(ParticlesWIthOpenCV src/main.cpp
         src/Game.cpp
         headers/Game.hpp
-        headers/Constants.hpp)
+        headers/Constants.hpp
+        headers/Fruit.hpp
+        src/Fruit.cpp)
 
 target_link_libraries(ParticlesWIthOpenCV ${OpenCV_LIBS})
-target_link_libraries(ParticlesWIthOpenCV sfml-graphics sfml-window sfml-system)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 

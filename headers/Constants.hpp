@@ -10,4 +10,6 @@ namespace Constants {
     inline constexpr int H_PAD = 10;
     inline constexpr int S_PAD = 40;
     inline constexpr int V_PAD = 40;
+    inline constexpr int STARTER_VELOCITY = 3;
+    inline constexpr double DOWNWARD_ACCELERATION = 1;
 }
