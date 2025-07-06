@@ -13,9 +13,10 @@ Game::Game() {
     this->hp;
 
 
-    fruits.push_back(Fruit(10,"/home/arielhirsch/codingProjects/C++/ParticlesWIthOpenCV/images/watermelon.png",0,1));
+    fruits.push_back(Fruit(10,"/home/arielhirsch/codingProjects/C++/ParticlesWIthOpenCV/images/watermelon.png",0.5,-18));
 
     cv::namedWindow("Image");
+    cv::resizeWindow("Image",Constants::SCREEN_WIDTH,Constants::SCREEN_HEIGHT);
     if (!cap.isOpened()) {
         std::cerr << "can not open camera";
     }
@@ -37,23 +38,27 @@ void Game::onMouseCallBack(int event,int x, int y,int,void* userdata) {
 }
 void Game::renderFruits() {
 
+    //erases fruit who fall down under the screen
     fruits.erase(
-        std::remove_if(fruits.begin(),fruits.end(),[&](const Fruit& fruit) {//we use remove_if to get a pointer to the end of the valid values and then erase deletes all the non-valid values
-                    return fruit.getY() > this->screen.rows && fruit.getYVelocity() > 0;
+        std::remove_if(fruits.begin(),fruits.end(),[&](const Fruit& fruit) {//we use remove_if to get a pointer to the end of the valid values and then erase deletes all the non-valid values. Remember how lambdas work
+                    return fruit.getY() >= this->screen.rows && fruit.getYVelocity() > 0;
         }),fruits.end()
     );
 
 
     for (Fruit& fruit : fruits) {
         cv::Mat fruitOverlay = cv::imread(fruit.getImage());
-        cv::resize(fruitOverlay,fruitOverlay,cv::Size(100,100));
-        if (fruit.getX() < this->screen.cols && fruit.getY() < this->screen.rows) {//checks that the image is not out of bounds
-            int height = fruitOverlay.rows;
+        cv::resize(fruitOverlay,fruitOverlay,cv::Size(Constants::WIDTH_HEIGHT,Constants::WIDTH_HEIGHT));
+
+
+        if (fruit.getX() < this->screen.cols && fruit.getY() < this->screen.rows) {//checks that the image is not out of bounds,safety check.
+            double height = fruitOverlay.rows;
             if (this->screen.rows - fruit.getY() < fruitOverlay.rows) {
                 height = this->screen.rows - fruit.getY();
-                fruitOverlay = fruitOverlay(cv::Rect(0,0,fruitOverlay.cols,height));
+                fruitOverlay = fruitOverlay(cv::Rect(0,0,fruitOverlay.cols,static_cast<int>(height)));//crops the image
             }
-            fruitOverlay.copyTo(this->screen(cv::Rect(fruit.getX(),fruit.getY(),fruitOverlay.cols,height)));
+            if (static_cast<int>(height) > 0)
+                fruitOverlay.copyTo(this->screen(cv::Rect(static_cast<int>(fruit.getX()),static_cast<int>(fruit.getY()),fruitOverlay.cols,static_cast<int>(height))));
         }
         fruit.move();
     }

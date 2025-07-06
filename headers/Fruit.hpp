@@ -7,21 +7,21 @@
 
 class Fruit {
     public:
-        Fruit(int points,const std::string& image,int xVelocity, int yVelocity);
+        Fruit(int points,const std::string& image,double xVelocity, double yVelocity);
         void move();
         void slice();
         std::string getImage() const;
-        int getX() const;
-        int getY() const;
-        int getXVelocity() const;
-        int getYVelocity() const;
+        double getX() const;
+        double getY() const;
+        double getXVelocity() const;
+        double getYVelocity() const;
         unsigned int getPoints() const;
     private:
         unsigned int points;
         std::string image;
-        int x;
-        int y;
-        unsigned int xVelocity;
-        unsigned int yVelocity;
+        double x;
+        double y;
+        double xVelocity;
+        double yVelocity;
 
 };

@@ -5,13 +5,13 @@ std::string Fruit::getImage() const{
     return this->image;
 }
 
-Fruit::Fruit(int points, const std::string& image, int xVelocity, int yVelocity) {
+Fruit::Fruit(int points, const std::string& image, double xVelocity, double yVelocity) {
     this->points = points;
     this-> image = image;
     this->xVelocity = xVelocity;
     this->yVelocity= yVelocity;
-    this->x = 100;
-    this->y = 100;
+    this->x = Constants::SCREEN_WIDTH/2;
+    this->y = Constants::SCREEN_HEIGHT+Constants::WIDTH_HEIGHT;
 }
 
 void Fruit::move() {
@@ -25,11 +25,11 @@ void Fruit::slice() {
 
 }
 
-int Fruit::getX() const{
+double Fruit::getX() const{
     return  this->x;
 }
 
-int Fruit::getY() const{
+double Fruit::getY() const{
     return this->y;
 }
 
@@ -37,10 +37,10 @@ int Fruit::getY() const{
     return this->points;
 }
 
-int Fruit::getXVelocity() const{
+double Fruit::getXVelocity() const{
     return this->xVelocity;
 }
 
-int Fruit::getYVelocity() const{
+double Fruit::getYVelocity() const{
     return this->yVelocity;
 }
