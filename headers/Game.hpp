@@ -14,7 +14,7 @@ class Game {
         void loop();
     private:
         bool isConfig;
-        cv::Mat screen,hsvImage,maskImage;
+        cv::Mat screen,bluredImage,hsvImage,maskImage;
         cv::VideoCapture cap;
         cv::Scalar lower;
         cv::Scalar higher;
@@ -23,6 +23,7 @@ class Game {
         unsigned int hp;
         void startRound();
         void renderFruits();
+        void detectFinger();
         static void onMouseCallBack(int event,int x,int y,int,void*);
 };
 

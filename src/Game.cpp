@@ -70,8 +70,12 @@ void Game::loop() {
     cv::setMouseCallback("Image",onMouseCallBack,this);
     while (true) {
         cap.read(this->screen);
-        cv::cvtColor(this->screen,this->hsvImage,cv::COLOR_BGR2HSV);
+        cv::GaussianBlur(this->screen,this->bluredImage,cv::Size(7,7),0);//adjust for accuracy
+        cv::cvtColor(this->bluredImage,this->hsvImage,cv::COLOR_BGR2HSV);
         cv::inRange(this->hsvImage,this->lower,this->higher,this->maskImage);
+        //remove noise
+        cv::erode(hsvImage,hsvImage,cv::Mat(),cv::Point(-1,-1),2);
+        cv::dilate(hsvImage,hsvImage,cv::Mat(),cv::Point(-1,-1),2);
 
         if (this->isConfig) {
             cv::putText(this->screen, "Click your hand to calibrate. Press 's' to start game.",
@@ -86,6 +90,7 @@ void Game::loop() {
         }
 
         //Game logic
+        detectFinger();
         renderFruits();//needs to be before the imshow so it will be on top of the image.
 
         cv::imshow("maskImage",this->maskImage);
@@ -98,6 +103,40 @@ void Game::loop() {
         }
     }
 }
+
+
+void Game::detectFinger() {
+    std::vector<std::vector<cv::Point>> contours;
+    cv::findContours(maskImage,contours,cv::RETR_EXTERNAL,cv::CHAIN_APPROX_SIMPLE);
+    int largestContourIndex = 0;
+    int maxArea = 0;
+    for (int i =0; i < contours.size(); i++) {
+        int area = cv::contourArea(contours[i]);
+
+        if (area > maxArea) {
+            largestContourIndex = i;
+            maxArea = area;
+        }
+    }
+    cv::Rect handBox = cv::boundingRect(contours[largestContourIndex]);
+    cv::Rect fingerRegion(handBox.x,handBox.y,handBox.width,handBox.height*0.3);
+
+    cv::Mat fingerMask = maskImage(fingerRegion);
+    std::vector<std::vector<cv::Point>> fingerContours;
+    cv::findContours(fingerMask,fingerContours,cv::RETR_EXTERNAL,cv::CHAIN_APPROX_SIMPLE);
+
+
+    for (const auto& finger : fingerContours) {
+        cv::Rect fingerRect = cv::boundingRect(finger);
+        fingerRect.y += handBox.y;
+        fingerRect.x += handBox.x;
+        cv::rectangle(this->screen,fingerRect,cv::Scalar(255,0,0),3);
+    }
+}
+
+
+
+
 
 
 

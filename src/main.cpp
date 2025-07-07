@@ -70,47 +70,12 @@ int main() {
         cv::Scalar higher(hH,hS,hV);
         cv::inRange(hsvImage,lower,higher,skinMaskImage);
 
-        cv::erode(skinMaskImage,skinMaskImage,cv::Mat(),cv::Point(-1,-1),2);
-        cv::dilate(skinMaskImage,skinMaskImage,cv::Mat(),cv::Point(-1,-1),2);
 
         cv::namedWindow("Image");
         cv::setMouseCallback("Image",onMouseCallBack);
 
 
-        std::vector<std::vector<cv::Point>> contours;
-        cv::findContours(skinMaskImage,contours,cv::RETR_EXTERNAL,cv::CHAIN_APPROX_SIMPLE);
-        int largestContourIndex = 0;
-        int maxArea = 0;
-        if (contours.empty()) {
-            cv::imshow("Image",image);
-            cv::imshow("maskImage",skinMaskImage);
-            if (cv::waitKey(1) == 'q') {
-                break;
-            }
-            continue;
-        }
-        for (int i =0; i < contours.size(); i++) {
-            int area = cv::contourArea(contours[i]);
 
-            if (area > maxArea) {
-                largestContourIndex = i;
-                maxArea = area;
-            }
-        }
-        cv::Rect handBox = cv::boundingRect(contours[largestContourIndex]);
-        cv::Rect fingerRegion(handBox.x,handBox.y,handBox.width,handBox.height*0.3);
-
-        cv::Mat fingerMask = skinMaskImage(fingerRegion);
-        std::vector<std::vector<cv::Point>> fingerContours;
-        cv::findContours(fingerMask,fingerContours,cv::RETR_EXTERNAL,cv::CHAIN_APPROX_SIMPLE);
-
-
-        for (const auto& finger : fingerContours) {
-            cv::Rect fingerRect = cv::boundingRect(finger);
-            fingerRect.y += handBox.y;
-            fingerRect.x += handBox.x;
-            cv::rectangle(image,fingerRect,cv::Scalar(255,0,0),3);
-        }
 
 
 
