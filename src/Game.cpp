@@ -108,30 +108,22 @@ void Game::loop() {
 void Game::detectFinger() {
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours(maskImage,contours,cv::RETR_EXTERNAL,cv::CHAIN_APPROX_SIMPLE);
-    int largestContourIndex = 0;
-    int maxArea = 0;
+    int fingerIndex = 0;
     for (int i =0; i < contours.size(); i++) {
-        int area = cv::contourArea(contours[i]);
+        cv::Rect handBox = cv::boundingRect(contours[i]);
+        cv::Rect fingerRegion(handBox.x,handBox.y,handBox.width,handBox.height*0.3);
+        cv::Mat fingerMask = maskImage(fingerRegion);
+        std::vector<std::vector<cv::Point>> fingerContours;
+        cv::findContours(fingerMask,fingerContours,cv::RETR_EXTERNAL,cv::CHAIN_APPROX_SIMPLE);
 
-        if (area > maxArea) {
-            largestContourIndex = i;
-            maxArea = area;
+        int area = cv::contourArea(contours[i]);
+        if (!fingerContours.empty() && area*3 > cv::contourArea(fingerContours[0])) {
+            fingerIndex = i;
         }
     }
-    cv::Rect handBox = cv::boundingRect(contours[largestContourIndex]);
-    cv::Rect fingerRegion(handBox.x,handBox.y,handBox.width,handBox.height*0.3);
 
-    cv::Mat fingerMask = maskImage(fingerRegion);
-    std::vector<std::vector<cv::Point>> fingerContours;
-    cv::findContours(fingerMask,fingerContours,cv::RETR_EXTERNAL,cv::CHAIN_APPROX_SIMPLE);
-
-
-    for (const auto& finger : fingerContours) {
-        cv::Rect fingerRect = cv::boundingRect(finger);
-        fingerRect.y += handBox.y;
-        fingerRect.x += handBox.x;
-        cv::rectangle(this->screen,fingerRect,cv::Scalar(255,0,0),3);
-    }
+    cv::Rect finger = cv::boundingRect(contours[fingerIndex]);
+    cv::rectangle(this->screen,finger,cv::Scalar(255,0,0),3);
 }
 
 
