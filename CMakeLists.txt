@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.31)
 project(ParticlesWIthOpenCV)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(OpenCV REQUIRED)
 find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
@@ -11,7 +12,9 @@ add_executable(ParticlesWIthOpenCV src/main.cpp
         headers/Game.hpp
         headers/Constants.hpp
         headers/Fruit.hpp
-        src/Fruit.cpp)
+        src/Fruit.cpp
+        headers/TrailEffect.hpp
+        src/TrailEffect.cpp)
 
 target_link_libraries(ParticlesWIthOpenCV ${OpenCV_LIBS})
 include_directories(${OpenCV_INCLUDE_DIRS})

@@ -5,7 +5,11 @@
 #pragma once
 
 #include <opencv2/opencv.hpp>
+#include <memory>
 #include "Fruit.hpp"
+#include "TrailEffect.hpp"
+#include <vector>
+
 
 
 class Game {
@@ -19,11 +23,13 @@ class Game {
         cv::Scalar lower;
         cv::Scalar higher;
         std::vector<Fruit> fruits;
+        std::vector<std::unique_ptr<FingerTrail>> fingerTrails;//uses memory allocation
         unsigned int round;
         unsigned int hp;
         void startRound();
         void renderFruits();
         void detectFinger();
+        void drawSliceEffect(int x,int y);
         static void onMouseCallBack(int event,int x,int y,int,void*);
 };
 

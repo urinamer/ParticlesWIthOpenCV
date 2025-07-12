@@ -18,4 +18,8 @@ namespace Constants {
     inline constexpr int STARTER_VELOCITY = -3;
     inline constexpr int WIDTH_HEIGHT = 100;
     inline constexpr double DOWNWARD_ACCELERATION = 0.33;
+
+    //trail constants
+    inline constexpr double FINGER_TRAIL_DURATION = 0.5;// in seconds
+    inline constexpr int FINGER_TRAIL_RADIUS= 3;
 }
