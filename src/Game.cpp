@@ -3,6 +3,8 @@
 #include "../headers/Game.hpp"
 #include "../headers/Constants.hpp"
 #include <opencv2/opencv.hpp>
+#include <chrono>
+#include <memory>
 
 Game::Game() {
     this->cap = cv::VideoCapture(0);
@@ -40,7 +42,7 @@ void Game::renderFruits() {
 
     //erases fruit who fall down under the screen
     fruits.erase(
-        std::remove_if(fruits.begin(),fruits.end(),[&](const Fruit& fruit) {//we use remove_if to get a pointer to the end of the valid values and then erase deletes all the non-valid values. Remember how lambdas work
+        std::remove_if(fruits.begin(),fruits.end(),[&](const Fruit& fruit) {//We use remove_if to get a pointer to the end of the valid values and then erase deletes all the non-valid values. Remember how lambdas work
                     return fruit.getY() >= this->screen.rows && fruit.getYVelocity() > 0;
         }),fruits.end()
     );
@@ -109,14 +111,17 @@ void Game::detectFinger() {
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours(maskImage,contours,cv::RETR_EXTERNAL,cv::CHAIN_APPROX_SIMPLE);
     int largestContourIndex = 0;
-    int maxArea = 0;
-    for (int i =0; i < contours.size(); i++) {
-        int area = cv::contourArea(contours[i]);
+    double maxArea = 0;
+    for (int i = 0; i < contours.size(); i++) {
+        double area = cv::contourArea(contours[i]);
 
         if (area > maxArea) {
             largestContourIndex = i;
             maxArea = area;
         }
+    }
+    if (contours.empty()) {
+        return;
     }
     cv::Rect handBox = cv::boundingRect(contours[largestContourIndex]);
     cv::Rect fingerRegion(handBox.x,handBox.y,handBox.width,handBox.height*0.3);
@@ -126,13 +131,56 @@ void Game::detectFinger() {
     cv::findContours(fingerMask,fingerContours,cv::RETR_EXTERNAL,cv::CHAIN_APPROX_SIMPLE);
 
 
-    for (const auto& finger : fingerContours) {
-        cv::Rect fingerRect = cv::boundingRect(finger);
-        fingerRect.y += handBox.y;
+    if (!fingerContours.empty()) {
+        cv::Rect fingerRect = cv::boundingRect(fingerContours[0]);
         fingerRect.x += handBox.x;
+        fingerRect.y += handBox.y;
         cv::rectangle(this->screen,fingerRect,cv::Scalar(255,0,0),3);
     }
+
+    drawSliceEffect(handBox.x,handBox.y);
 }
+
+void Game::drawSliceEffect(int x, int y) {
+    std::vector<std::unique_ptr<FingerTrail>> trailsToAdd;
+
+    auto time = std::chrono::high_resolution_clock::now();
+
+    if (this->fingerTrails.size() < 15) {
+        std::unique_ptr<FingerTrail> trailPointer=  std::make_unique<FingerTrail>(time,x,y);
+        this->fingerTrails.push_back(std::move(trailPointer));//moves ownership of the unique pointer to the vector
+    }
+    for (auto it = this->fingerTrails.begin();  it != fingerTrails.end();) {//uses a manual iterator because we are removing things
+
+        //draws trail
+        cv::circle(this->screen,cv::Point(it->get()->getX(),it->get()->getY()),Constants::FINGER_TRAIL_RADIUS,cv::Scalar(255,0,0),-1);
+
+        double duration = std::chrono::duration<double>(time-it->get()->getStartTime()).count();//convert to double
+        if (duration >= it->get()->getDuration()) {
+            //remove trail
+            it = this->fingerTrails.erase(it);//NOTE: EXPENSIVE OPERATION
+
+            //creates new trail
+            std::unique_ptr<FingerTrail> trailPointer=  std::make_unique<FingerTrail>(time,x,y);
+            trailsToAdd.push_back(std::move(trailPointer));
+        }
+        else {
+            ++it;//moves the iterator to the next "node"
+        }
+
+    }
+
+
+    //adds the new trails
+    for (int j = 0; j < trailsToAdd.size(); j++) {
+        this->fingerTrails.push_back(std::move(trailsToAdd[j]));
+    }
+
+
+}
+
+
+
 
 
 
