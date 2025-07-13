@@ -24,12 +24,16 @@ class Game {
         cv::Scalar higher;
         std::vector<Fruit> fruits;
         std::vector<std::unique_ptr<FingerTrail>> fingerTrails;//uses memory allocation
+        unsigned int fingerMiddleX;
+        unsigned int fingerMiddleY;
+        cv::Rect fingerRect;
         unsigned int round;
         unsigned int hp;
         void startRound();
         void renderFruits();
         void detectFinger();
         void drawSliceEffect(int x,int y);
+        void checkColisions();
         static void onMouseCallBack(int event,int x,int y,int,void*);
 };
 

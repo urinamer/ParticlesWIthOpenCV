@@ -3,6 +3,7 @@
 //
 #pragma once
 #include <iostream>
+#include <opencv2/opencv.hpp>
 
 
 class Fruit {
@@ -16,6 +17,8 @@ class Fruit {
         double getXVelocity() const;
         double getYVelocity() const;
         unsigned int getPoints() const;
+        cv::Rect getFruitRect() const;
+        void setFruitRect(cv::Rect fruitRect);
     private:
         unsigned int points;
         std::string image;
@@ -23,5 +26,6 @@ class Fruit {
         double y;
         double xVelocity;
         double yVelocity;
+        cv::Rect fruitRect;
 
 };

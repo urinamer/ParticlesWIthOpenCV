@@ -59,8 +59,10 @@ void Game::renderFruits() {
                 height = this->screen.rows - fruit.getY();
                 fruitOverlay = fruitOverlay(cv::Rect(0,0,fruitOverlay.cols,static_cast<int>(height)));//crops the image
             }
-            if (static_cast<int>(height) > 0)
-                fruitOverlay.copyTo(this->screen(cv::Rect(static_cast<int>(fruit.getX()),static_cast<int>(fruit.getY()),fruitOverlay.cols,static_cast<int>(height))));
+            if (static_cast<int>(height) > 0) {
+                fruit.setFruitRect(cv::Rect(static_cast<int>(fruit.getX()),static_cast<int>(fruit.getY()),fruitOverlay.cols,static_cast<int>(height)));
+                fruitOverlay.copyTo(this->screen(fruit.getFruitRect()));//WEIRD
+            }
         }
         fruit.move();
     }
@@ -94,6 +96,9 @@ void Game::loop() {
         //Game logic
         detectFinger();
         renderFruits();//needs to be before the imshow so it will be on top of the image.
+
+
+        checkColisions();
 
         cv::imshow("maskImage",this->maskImage);
         cv::imshow("Image",this->screen);
@@ -132,13 +137,23 @@ void Game::detectFinger() {
 
 
     if (!fingerContours.empty()) {
-        cv::Rect fingerRect = cv::boundingRect(fingerContours[0]);
+        this->fingerRect = cv::boundingRect(fingerContours[0]);
         fingerRect.x += handBox.x;
         fingerRect.y += handBox.y;
+        this->fingerMiddleX = fingerRect.x + fingerRect.width/2;
+        this->fingerMiddleY = fingerRect.y + fingerRect.height/2;
         cv::rectangle(this->screen,fingerRect,cv::Scalar(255,0,0),3);
+        drawSliceEffect(this->fingerMiddleX,this->fingerMiddleY);
+    }
+    else {
+        this->fingerRect = cv::Rect(-1,-1,-1,-1);
+        this->fingerMiddleX = -1;
+        this->fingerMiddleY = -1;
     }
 
-    drawSliceEffect(handBox.x,handBox.y);
+
+
+
 }
 
 void Game::drawSliceEffect(int x, int y) {
@@ -175,10 +190,17 @@ void Game::drawSliceEffect(int x, int y) {
     for (int j = 0; j < trailsToAdd.size(); j++) {
         this->fingerTrails.push_back(std::move(trailsToAdd[j]));
     }
-
-
 }
 
+
+void Game::checkColisions() {
+    fruits.erase(std::remove_if(fruits.begin(),fruits.end(),[&](const Fruit& fruit) {
+        if (this->fingerRect.x > 0) {
+            return (this->fingerRect & fruit.getFruitRect()).area() > 0;
+        }
+        return false;
+    }),fruits.end());
+}
 
 
 

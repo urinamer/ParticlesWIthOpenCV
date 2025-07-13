@@ -44,3 +44,13 @@ double Fruit::getXVelocity() const{
 double Fruit::getYVelocity() const{
     return this->yVelocity;
 }
+
+cv::Rect Fruit::getFruitRect() const{
+    return this->fruitRect;
+}
+
+void Fruit::setFruitRect(cv::Rect fruitRect) {
+    this->fruitRect = fruitRect;
+}
+
+
